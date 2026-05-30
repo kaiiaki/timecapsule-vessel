@@ -1177,7 +1177,7 @@ function SealScreen({ onDone, recipient, blob, user }) {
         const deliverAt = new Date();
         deliverAt.setFullYear(deliverAt.getFullYear() + 1);
 
-        const { error: dbError } = await supabase.from("capsules").insert({
+        const { data: insertData, error: dbError } = await supabase.from("capsules").insert({
           sender_email: recipient.senderEmail,
           recipient_email: recipient.mode === "other" ? recipient.recipientEmail : recipient.senderEmail,
           recipient_name: recipient.mode === "other" ? recipient.recipientName : null,
@@ -1186,8 +1186,28 @@ function SealScreen({ onDone, recipient, blob, user }) {
           status: "sealed",
           deliver_at: deliverAt.toISOString(),
           user_id: user?.id || null,
-        });
+        }).select();
         if (dbError) throw dbError;
+
+        const capsuleId = insertData?.[0]?.id;
+        if (capsuleId) {
+          const { error: fnError } = await supabase.functions.invoke("send-preview-email", {
+            body: { capsule_id: capsuleId },
+          });
+          if (fnError) console.error("Email function error:", fnError);
+        } else {
+          const { data: latest } = await supabase
+            .from("capsules")
+            .select("id")
+            .eq("sender_email", recipient.senderEmail)
+            .order("created_at", { ascending: false })
+            .limit(1);
+          if (latest?.[0]?.id) {
+            await supabase.functions.invoke("send-preview-email", {
+              body: { capsule_id: latest[0].id },
+            });
+          }
+        }
 
         setStep(2);
       } catch (e) {
