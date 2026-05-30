@@ -1122,7 +1122,7 @@ function PreviewScreen({ blob, mimeType, onConfirm, onRedo, onBack }) {
             controls
             onPlay={handlePlay}
             onEnded={() => setPreviewEnded(true)}
-            style={{ transform: "scaleX(-1)", width: "100%", height: "100%", objectFit: "cover", display: dataUrl ? "block" : "none" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: dataUrl ? "block" : "none" }}
           />
         </div>
         <div style={{ padding: "1rem 1.25rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
