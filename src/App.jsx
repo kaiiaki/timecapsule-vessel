@@ -1467,7 +1467,10 @@ function AuthScreen({ onAuth, onBack }) {
     setError(null);
     try {
       if (method === "magic") {
-        const { error } = await supabase.auth.signInWithOtp({ email });
+        const { error } = await supabase.auth.signInWithOtp({ 
+          email,
+          options: { emailRedirectTo: window.location.origin }
+        });
         if (error) throw error;
         setMagicSent(true);
       } else if (tab === "signup") {
